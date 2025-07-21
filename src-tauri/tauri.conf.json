@@ -27,7 +27,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis", "app", "dmg"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png", 
@@ -35,15 +35,10 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "identifier": "com.pdfcompressor.app",
     "publisher": "PDF Compressor Team",
     "copyright": "Copyright © 2025 PDF Compressor Team. All rights reserved.",
     "category": "Productivity",
-    "shortDescription": "Professional PDF compression tool",
-    "longDescription": "A modern PDF compression application with built-in optimization engine and professional quality presets.",
-    "windows": {
-      "nsis": {
-        "installMode": "currentUser"
-      }
-    }
+    "shortDescription": "Professional PDF compression tool"
   }
 }
