@@ -5,77 +5,11 @@ on:
     tags:
       - 'v*'
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  create-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-20.04
-    outputs:
-      release_id: ${{ steps.create-release.outputs.result }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Create release
-        id: create-release
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `${context.ref.replace(/refs\/tags\//, '')}`,
-              name: `PDF Compressor ${context.ref.replace(/refs\/tags\//, '')}`,
-              body: `## PDF Compressor Release ${context.ref.replace(/refs\/tags\//, '')}
-            
-            ### ✨ Features
-            - **Professional PDF Compression**: Multiple quality presets for different use cases
-            - **Built-in Engine**: No external dependencies like Ghostscript required
-            - **Modern Interface**: Clean, minimalist design with professional workflow
-            - **Cross-platform**: Native apps for Windows, macOS, and Linux
-            
-            ### 📊 Compression Levels
-            - **Screen (72 DPI)**: Maximum compression for web sharing and email
-            - **eBook (150 DPI)**: Balanced quality for document reading and storage
-            - **Printer (300 DPI)**: High quality for office printing and documents
-            - **Prepress (300+ DPI)**: Professional printing and commercial use
-            
-            ### 💾 Installation
-            
-            #### Windows
-            - **Recommended**: Download \`.msi\` installer for automatic installation
-            - **Alternative**: Download \`.exe\` portable installer
-            
-            #### macOS
-            - Download \`.dmg\` file and drag PDF Compressor to Applications folder
-            - **Note**: You may need to right-click and select "Open" first time due to security settings
-            
-            #### Linux
-            - **AppImage**: Download \`.AppImage\` file, make executable, and run directly
-            - **Debian/Ubuntu**: Download \`.deb\` file and install with \`sudo dpkg -i filename.deb\`
-            
-            ### 🛠️ Technical Details
-            - Built with **Tauri** (Rust + Web frontend) for optimal performance and security
-            - Uses **lopdf** library for native PDF processing
-            - **React** + **TypeScript** + **Tailwind CSS** + **DaisyUI** for modern UI
-            - Zero external runtime dependencies
-            
-            ### 🔒 Security
-            - All processing happens locally on your machine
-            - No data is sent to external servers
-            - Open source - you can review the code
-            
-            ---
-            
-            **Full Changelog**: https://github.com/${{ context.repo.owner }}/${{ context.repo.repo }}/compare/v1.0.0...${context.ref.replace(/refs\/tags\//, '')}`,
-              draft: false,
-              prerelease: false
-            });
-            return data.id
-
-  build-tauri:
-    needs: create-release
+  release:
     permissions:
       contents: write
     strategy:
@@ -84,7 +18,7 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: ''
-          - platform: 'ubuntu-20.04'
+          - platform: 'ubuntu-20.04' 
             args: ''
           - platform: 'windows-latest'
             args: ''
@@ -122,5 +56,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: ${{ github.ref_name }}
+          releaseName: 'PDF Compressor v${{ github.ref_name }}'
+          releaseBody: |
+            ## PDF Compressor Release ${{ github.ref_name }}
+            
+            ### ✨ Features
+            - Professional PDF compression with multiple quality presets
+            - Built-in PDF optimization engine (no external dependencies)
+            - Modern, minimalist user interface
+            - Cross-platform support (Windows, macOS, Linux)
+            
+            ### 📊 Compression Levels
+            - **Screen (72 DPI)**: Maximum compression for web sharing
+            - **eBook (150 DPI)**: Balanced quality for document reading
+            - **Printer (300 DPI)**: High quality for office printing
+            - **Prepress (300+ DPI)**: Professional printing standard
+            
+            ### 💾 Installation
+            Download the appropriate installer for your platform from the assets below.
+            
+            🚀 Built with Tauri, React, and Rust for optimal performance and security.
+          releaseDraft: false
+          prerelease: false
           args: ${{ matrix.args }}
