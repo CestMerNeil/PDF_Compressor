@@ -24,7 +24,7 @@ This guide explains how to upload and deploy the PDF Compressor project to GitHu
 
 ```bash
 # Add GitHub remote origin
-git remote add origin https://github.com/YOUR_USERNAME/pdf-compressor.git
+git remote add origin https://github.com/CestMerNeil/PDF_Compressor.git
 
 # Verify remote was added
 git remote -v
@@ -39,13 +39,13 @@ git push -u origin main
 After creating the repository, update the badges in `README.md`:
 
 ```markdown
-[![Build Status](https://github.com/YOUR_USERNAME/pdf-compressor/workflows/Build%20and%20Release/badge.svg)](https://github.com/YOUR_USERNAME/pdf-compressor/actions)
-[![Release](https://img.shields.io/github/v/release/YOUR_USERNAME/pdf-compressor)](https://github.com/YOUR_USERNAME/pdf-compressor/releases)
-[![License](https://img.shields.io/github/license/YOUR_USERNAME/pdf-compressor)](LICENSE)
-[![Downloads](https://img.shields.io/github/downloads/YOUR_USERNAME/pdf-compressor/total)](https://github.com/YOUR_USERNAME/pdf-compressor/releases)
+[![Build Status](https://github.com/CestMerNeil/PDF_Compressor/workflows/Build%20and%20Release/badge.svg)](https://github.com/CestMerNeil/PDF_Compressor/actions)
+[![Release](https://img.shields.io/github/v/release/CestMerNeil/PDF_Compressor)](https://github.com/CestMerNeil/PDF_Compressor/releases)
+[![License](https://img.shields.io/github/license/CestMerNeil/PDF_Compressor)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/CestMerNeil/PDF_Compressor/total)](https://github.com/CestMerNeil/PDF_Compressor/releases)
 ```
 
-Replace `YOUR_USERNAME` with your actual GitHub username.
+The badges are already updated with the correct repository information.
 
 ## 🔧 GitHub Actions Setup
 
@@ -148,8 +148,8 @@ GitHub will show a community standards checklist. We've included:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/pdf-compressor.git
-cd pdf-compressor
+git clone https://github.com/CestMerNeil/PDF_Compressor.git
+cd PDF_Compressor
 
 # Install dependencies
 yarn install

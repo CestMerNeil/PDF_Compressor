@@ -6,12 +6,12 @@
 
 **A modern, professional PDF compression tool with built-in optimization engine**
 
-[![Build Status](https://github.com/username/pdf-compressor/workflows/Build%20and%20Release/badge.svg)](https://github.com/username/pdf-compressor/actions)
-[![Release](https://img.shields.io/github/v/release/username/pdf-compressor)](https://github.com/username/pdf-compressor/releases)
-[![License](https://img.shields.io/github/license/username/pdf-compressor)](LICENSE)
-[![Downloads](https://img.shields.io/github/downloads/username/pdf-compressor/total)](https://github.com/username/pdf-compressor/releases)
+[![Build Status](https://github.com/CestMerNeil/PDF_Compressor/workflows/Build%20and%20Release/badge.svg)](https://github.com/CestMerNeil/PDF_Compressor/actions)
+[![Release](https://img.shields.io/github/v/release/CestMerNeil/PDF_Compressor)](https://github.com/CestMerNeil/PDF_Compressor/releases)
+[![License](https://img.shields.io/github/license/CestMerNeil/PDF_Compressor)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/CestMerNeil/PDF_Compressor/total)](https://github.com/CestMerNeil/PDF_Compressor/releases)
 
-[Download Latest](https://github.com/username/pdf-compressor/releases/latest) • [Report Issues](https://github.com/username/pdf-compressor/issues)
+[Download Latest](https://github.com/CestMerNeil/PDF_Compressor/releases/latest) • [Report Issues](https://github.com/CestMerNeil/PDF_Compressor/issues)
 
 </div>
 
@@ -68,8 +68,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/username/pdf-compressor.git
-   cd pdf-compressor
+   git clone https://github.com/CestMerNeil/PDF_Compressor.git
+   cd PDF_Compressor
    ```
 
 2. **Install dependencies**
@@ -90,7 +90,7 @@
 ### Project Structure
 
 ```
-pdf-compressor/
+PDF_Compressor/
 ├── src/                    # React frontend source
 │   ├── App.tsx            # Main application component
 │   ├── App.css            # Application styles
@@ -131,6 +131,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for the open source community**
 
-[⭐ Star us on GitHub](https://github.com/username/pdf-compressor) if you find this project useful!
+[⭐ Star us on GitHub](https://github.com/CestMerNeil/PDF_Compressor) if you find this project useful!
 
 </div>

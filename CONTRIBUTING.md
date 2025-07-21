@@ -20,8 +20,8 @@ Before you begin, ensure you have the following installed:
 
 2. **Clone and setup**
    ```bash
-   git clone https://github.com/your-username/pdf-compressor.git
-   cd pdf-compressor
+   git clone https://github.com/CestMerNeil/PDF_Compressor.git
+   cd PDF_Compressor
    yarn install
    ```
 
@@ -34,7 +34,7 @@ Before you begin, ensure you have the following installed:
 
 ### Reporting Bugs
 
-1. **Search existing issues** to avoid duplicates
+1. **Search existing issues** at https://github.com/CestMerNeil/PDF_Compressor/issues to avoid duplicates
 2. **Use the bug report template** when creating new issues
 3. **Provide detailed information**:
    - Operating system and version
