@@ -1,6 +1,6 @@
 [package]
 name = "pdf_compressor"
-version = "2.1.0"
+version = "3.0.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"

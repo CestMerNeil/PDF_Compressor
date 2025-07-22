@@ -2,9 +2,14 @@ name: Build PDF Compressor
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
   build:
@@ -13,16 +18,39 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
+            os: 'macos'
+            arch: 'x64'
+            target: ''
             args: ''
-          - platform: 'ubuntu-20.04'
+          - platform: 'macos-latest'
+            os: 'macos'
+            arch: 'arm64'
+            target: 'aarch64-apple-darwin'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            os: 'linux'
+            arch: 'x64'
+            target: ''
             args: ''
           - platform: 'windows-latest'
+            os: 'windows'
+            arch: 'x64'
+            target: ''
             args: ''
 
     runs-on: ${{ matrix.platform }}
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep '"version"' src-tauri/tauri.conf.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,24 +60,120 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Install dependencies (Ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
+      - name: Install Linux dependencies
+        if: matrix.os == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            libsoup2.4-dev \
+            libjavascriptcoregtk-4.0-dev \
+            libjavascriptcoregtk-4.1-dev \
+            patchelf
 
       - name: Install frontend dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
-      - name: Build the app
+      - name: Build frontend
+        run: yarn build
+
+      - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
           args: ${{ matrix.args }}
+
+      - name: Get system info and rename artifacts
+        id: rename
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          
+          # Create output directory
+          mkdir -p dist-renamed
+          
+          case "${{ matrix.os }}" in
+            "windows")
+              # Find and rename Windows artifacts
+              find src-tauri/target/release/bundle -name "*.msi" -exec cp {} "dist-renamed/PDF-Compressor-v${VERSION}-Windows-AMD64.msi" \; 2>/dev/null || true
+              find src-tauri/target/release/bundle -name "*setup.exe" -exec cp {} "dist-renamed/PDF-Compressor-v${VERSION}-Windows-AMD64-setup.exe" \; 2>/dev/null || true
+              ;;
+              
+            "macos")
+              if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+                SYSTEM_NAME="macOS-AppleSilicon"
+              else
+                SYSTEM_NAME="macOS-Intel"
+              fi
+              
+              # Find and rename macOS artifacts
+              find src-tauri/target/release/bundle -name "*.dmg" -exec cp {} "dist-renamed/PDF-Compressor-v${VERSION}-${SYSTEM_NAME}.dmg" \; 2>/dev/null || true
+              find src-tauri/target/release/bundle -name "*.app" -type d -exec cp -r {} "dist-renamed/PDF-Compressor-v${VERSION}-${SYSTEM_NAME}.app" \; 2>/dev/null || true
+              ;;
+              
+            "linux")
+              # Find and rename Linux artifacts
+              find src-tauri/target/release/bundle -name "*.deb" -exec cp {} "dist-renamed/PDF-Compressor-v${VERSION}-ubuntu-x64.deb" \; 2>/dev/null || true
+              find src-tauri/target/release/bundle -name "*.AppImage" -exec cp {} "dist-renamed/PDF-Compressor-v${VERSION}-ubuntu-x64.AppImage" \; 2>/dev/null || true
+              find src-tauri/target/release/bundle -name "*.rpm" -exec cp {} "dist-renamed/PDF-Compressor-v${VERSION}-ubuntu-x64.rpm" \; 2>/dev/null || true
+              
+              # Make AppImage executable
+              chmod +x dist-renamed/*.AppImage 2>/dev/null || true
+              ;;
+          esac
+          
+          # List created files
+          echo "Created artifacts:"
+          ls -la dist-renamed/ || echo "No artifacts found"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDF-Compressor-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist-renamed/*
+          if-no-files-found: warn
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -la artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/**/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

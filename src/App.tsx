@@ -55,7 +55,45 @@ function App() {
       setGsStatus(prev => ({...prev, is_downloading: true}));
     } catch (error) {
       console.error("下载 Ghostscript 失败:", error);
-      setStatus(`下载 Ghostscript 失败: ${error}`);
+      
+      // 检查是否是平台不支持的错误
+      const errorMessage = String(error);
+      if (errorMessage.includes("brew install") || errorMessage.includes("包管理器")) {
+        setStatus(`${error}`);
+      } else {
+        setStatus(`下载 Ghostscript 失败: ${error}`);
+      }
+    }
+  }
+  
+  // 卸载 Ghostscript
+  async function uninstallGhostscript() {
+    try {
+      setStatus("正在卸载 Ghostscript...");
+      const result = await invoke<boolean>("uninstall_ghostscript");
+      if (result) {
+        setGsStatus(prev => ({
+          ...prev, 
+          is_installed: false,
+          download_progress: 0
+        }));
+        setStatus("Ghostscript 已成功卸载");
+      } else {
+        setStatus("Ghostscript 未安装，无需卸载");
+      }
+    } catch (error) {
+      console.error("卸载 Ghostscript 失败:", error);
+      setStatus(`卸载 Ghostscript 失败: ${error}`);
+    }
+  }
+  
+  // 显示手动安装指南
+  async function showManualInstallGuide() {
+    try {
+      const instructions = await invoke<string>("get_manual_install_instructions");
+      alert(instructions);
+    } catch (error) {
+      console.error("获取安装指南失败:", error);
     }
   }
   
@@ -361,15 +399,35 @@ function App() {
                             "安装 Ghostscript 引擎可获得更好的压缩效果"}
                         </div>
                       </div>
-                      {!gsStatus.is_installed && !gsStatus.is_downloading && (
-                        <button 
-                          className="btn btn-sm btn-accent" 
-                          onClick={downloadGhostscript}
-                          disabled={isCompressing}
-                        >
-                          下载引擎
-                        </button>
-                      )}
+                      <div className="flex gap-2">
+                        {!gsStatus.is_installed && !gsStatus.is_downloading && (
+                          <>
+                            <button 
+                              className="btn btn-sm btn-accent" 
+                              onClick={downloadGhostscript}
+                              disabled={isCompressing}
+                            >
+                              自动安装
+                            </button>
+                            <button 
+                              className="btn btn-sm btn-outline btn-accent" 
+                              onClick={showManualInstallGuide}
+                              disabled={isCompressing}
+                            >
+                              安装指南
+                            </button>
+                          </>
+                        )}
+                        {gsStatus.is_installed && (
+                          <button 
+                            className="btn btn-sm btn-error" 
+                            onClick={uninstallGhostscript}
+                            disabled={isCompressing}
+                          >
+                            卸载引擎
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     {/* 下载进度条 */}
