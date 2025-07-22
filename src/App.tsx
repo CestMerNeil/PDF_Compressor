@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 
 interface CompressionSettings {
   level: string;
   inputPath: string;
   outputPath: string;
+}
+
+interface GhostscriptStatus {
+  is_installed: boolean;
+  is_downloading: boolean;
+  download_progress: number;
 }
 
 function App() {
@@ -17,12 +24,68 @@ function App() {
   const [status, setStatus] = useState<string>("");
   const [isCompressing, setIsCompressing] = useState(false);
   const [theme, setTheme] = useState<string>("light");
+  const [gsStatus, setGsStatus] = useState<GhostscriptStatus>({
+    is_installed: false,
+    is_downloading: false,
+    download_progress: 0
+  });
 
   // 初始化主题
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+  
+  // 检查 Ghostscript 状态
+  async function checkGhostscriptStatus() {
+    try {
+      const status = await invoke<GhostscriptStatus>("check_ghostscript_status");
+      setGsStatus(status);
+    } catch (error) {
+      console.error("检查 Ghostscript 状态失败:", error);
+    }
+  }
+  
+  // 下载 Ghostscript
+  async function downloadGhostscript() {
+    try {
+      setStatus("正在准备下载 Ghostscript...");
+      await invoke("download_ghostscript");
+      setGsStatus(prev => ({...prev, is_downloading: true}));
+    } catch (error) {
+      console.error("下载 Ghostscript 失败:", error);
+      setStatus(`下载 Ghostscript 失败: ${error}`);
+    }
+  }
+  
+  useEffect(() => {
+    checkGhostscriptStatus();
+    
+    // 设置事件监听器
+    const unlisten1 = listen('ghostscript-download-progress', (event) => {
+      setGsStatus(prev => ({...prev, download_progress: event.payload as number}));
+    });
+    
+    const unlisten2 = listen('ghostscript-installed', () => {
+      setGsStatus({
+        is_installed: true,
+        is_downloading: false,
+        download_progress: 100
+      });
+      setStatus("Ghostscript 安装成功！现在可以使用高级压缩功能。");
+    });
+    
+    const unlisten3 = listen('ghostscript-install-failed', (event) => {
+      setGsStatus(prev => ({...prev, is_downloading: false}));
+      setStatus(`Ghostscript 安装失败: ${event.payload}`);
+    });
+    
+    return () => {
+      unlisten1.then(fn => fn());
+      unlisten2.then(fn => fn());
+      unlisten3.then(fn => fn());
+    };
   }, []);
 
   // 主题切换函数
@@ -276,6 +339,52 @@ function App() {
                     >
                       Save As
                     </button>
+                  </div>
+                </div>
+
+                {/* Ghostscript 状态 */}
+                <div className="form-control">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-base-content">压缩引擎状态</span>
+                  </div>
+                  <div className="p-4 bg-base-200/50 rounded-lg border border-base-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-base-content mb-1">
+                          {gsStatus.is_installed ? 
+                            "✅ 高级压缩引擎已安装" : 
+                            "⚠️ 高级压缩引擎未安装"}
+                        </div>
+                        <div className="text-xs text-base-content/60">
+                          {gsStatus.is_installed ? 
+                            "使用 Ghostscript 引擎可获得最佳压缩效果" : 
+                            "安装 Ghostscript 引擎可获得更好的压缩效果"}
+                        </div>
+                      </div>
+                      {!gsStatus.is_installed && !gsStatus.is_downloading && (
+                        <button 
+                          className="btn btn-sm btn-accent" 
+                          onClick={downloadGhostscript}
+                          disabled={isCompressing}
+                        >
+                          下载引擎
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* 下载进度条 */}
+                    {gsStatus.is_downloading && (
+                      <div className="mt-3">
+                        <div className="text-xs text-base-content/60 mb-1">
+                          正在下载压缩引擎 ({Math.round(gsStatus.download_progress)}%)
+                        </div>
+                        <progress 
+                          className="progress progress-accent w-full" 
+                          value={gsStatus.download_progress} 
+                          max="100"
+                        ></progress>
+                      </div>
+                    )}
                   </div>
                 </div>
 
