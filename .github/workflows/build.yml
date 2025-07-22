@@ -107,6 +107,8 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
           args: ${{ matrix.args }}
+          projectPath: '.'
+          configPath: './src-tauri/tauri.conf.json'
 
       - name: Get system info and rename artifacts
         id: rename
