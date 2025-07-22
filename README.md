@@ -4,7 +4,7 @@
 
 ![PDF Compressor Logo](src-tauri/icons/icon.png)
 
-**A modern, professional PDF compression tool with built-in optimization engine**
+**A modern, professional PDF compression tool with integrated Ghostscript engine**
 
 [![Build Status](https://github.com/CestMerNeil/PDF_Compressor/workflows/Build%20and%20Release/badge.svg)](https://github.com/CestMerNeil/PDF_Compressor/actions)
 [![Release](https://img.shields.io/github/v/release/CestMerNeil/PDF_Compressor)](https://github.com/CestMerNeil/PDF_Compressor/releases)
@@ -17,13 +17,15 @@
 
 ## ✨ Features
 
-- **🚀 Built-in PDF Engine**: No external dependencies like Ghostscript required
-- **📊 Professional Quality Presets**: Four optimized compression levels for different use cases
+- **🚀 Integrated Ghostscript Engine**: Professional-grade PDF compression with automatic fallback to lopdf
+- **📊 Advanced Compression Levels**: Four optimized presets with fine-tuned parameters for maximum efficiency
+- **🔧 Smart Engine Selection**: Automatically uses Ghostscript when available, falls back to lopdf for compatibility
 - **🎨 Modern Interface**: Clean, minimalist design with professional workflow
 - **🔒 Privacy First**: All processing happens locally - no data leaves your machine
 - **⚡ Fast & Efficient**: Built with Rust and Tauri for optimal performance
 - **🌍 Cross-platform**: Native apps for Windows, macOS, and Linux
 - **📱 Responsive Design**: Optimized interface that works beautifully on any screen size
+- **📦 Self-contained**: Automatically downloads and configures Ghostscript when needed
 
 ## 📊 Compression Levels
 
@@ -38,7 +40,8 @@
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS, DaisyUI
 - **Backend**: Rust, Tauri 2.0
-- **PDF Processing**: lopdf (pure Rust PDF library)
+- **PDF Processing**: Ghostscript (primary engine) + lopdf (fallback library)
+- **Compression Engine**: Professional Ghostscript with optimized parameters
 - **Build System**: Vite, Cargo
 - **CI/CD**: GitHub Actions
 
@@ -97,7 +100,7 @@ PDF_Compressor/
 │   └── main.tsx           # Entry point
 ├── src-tauri/             # Rust backend source
 │   ├── src/
-│   │   ├── lib.rs         # Core PDF processing logic
+│   │   ├── lib.rs         # Ghostscript integration & PDF processing
 │   │   └── main.rs        # Application entry point
 │   ├── Cargo.toml         # Rust dependencies
 │   └── tauri.conf.json    # Tauri configuration
@@ -122,7 +125,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Tauri](https://tauri.app/) - For the excellent desktop app framework
-- [lopdf](https://github.com/J-F-Liu/lopdf) - For pure Rust PDF processing
+- [Ghostscript](https://www.ghostscript.com/) - For professional PDF processing engine
+- [lopdf](https://github.com/J-F-Liu/lopdf) - For pure Rust PDF fallback processing
 - [DaisyUI](https://daisyui.com/) - For beautiful UI components
 
 ---

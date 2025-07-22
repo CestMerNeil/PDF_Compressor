@@ -16,7 +16,8 @@
 ### 后端技术栈
 - **Tauri 2** - 桌面应用框架
 - **Rust** - 系统编程语言
-- **Ghostscript** - PDF 压缩引擎
+- **Ghostscript** - 主要PDF压缩引擎（专业级）
+- **lopdf** - 备用Rust原生PDF处理库
 
 ## 📁 项目结构
 
@@ -57,9 +58,11 @@ PDF_Compressor/
 - 支持自定义文件名
 
 ### 4. PDF 压缩
-- 调用本地 Ghostscript 命令
+- 智能引擎选择：优先使用Ghostscript，自动回退到lopdf
+- 自动下载和配置Ghostscript（如需要）
+- 专业级压缩参数优化
 - 异步处理，显示进度状态
-- 错误处理和用户反馈
+- 详细的压缩报告和错误处理
 
 ## 🎨 用户界面
 
@@ -96,21 +99,25 @@ const [isCompressing, setIsCompressing] = useState(false);
 ```rust
 #[tauri::command]
 async fn compress_pdf(input_path: String, output_path: String, compression_level: String) -> Result<CompressionResult, String> {
-    // 构建 Ghostscript 命令
-    let output = Command::new("gs")
-        .args(&[
-            "-sDEVICE=pdfwrite",
-            "-dCompatibilityLevel=1.4",
-            &format!("-dPDFSETTINGS={}", compression_level),
-            "-dNOPAUSE",
-            "-dQUIET",
-            "-dBATCH",
-            "-sOutputFile",
-            &output_path,
-            &input_path,
-        ])
-        .output();
-    // ... 错误处理和结果返回
+    // 智能引擎选择
+    if is_ghostscript_available() {
+        // 使用专业级Ghostscript压缩
+        compress_with_ghostscript(&input_path, &output_path, &compression_level).await
+    } else {
+        // 回退到lopdf + 增强优化
+        compress_with_enhanced_lopdf(&input_path, &output_path, &compression_level).await
+    }
+}
+
+// Ghostscript压缩实现
+async fn compress_with_ghostscript(input_path: &str, output_path: &str, compression_level: &str) -> Result<CompressionResult, String> {
+    // 高级压缩参数配置
+    let (pdf_settings, additional_args) = match compression_level {
+        "/screen" => ("/screen", vec!["-dJPEGQ=30", "-dColorImageResolution=72"]),
+        "/ebook" => ("/ebook", vec!["-dJPEGQ=50", "-dColorImageResolution=150"]),
+        // ... 更多优化参数
+    };
+    // ... 执行压缩
 }
 ```
 
@@ -126,6 +133,9 @@ async fn compress_pdf(input_path: String, output_path: String, compression_level
 - `tauri` - 桌面应用框架
 - `tauri-plugin-dialog` - 对话框插件
 - `serde` - 序列化支持
+- `lopdf` - Rust原生PDF处理库
+- `reqwest` - HTTP客户端（Ghostscript下载）
+- `tokio` - 异步运行时
 
 ## 🚀 部署和构建
 
@@ -163,9 +173,11 @@ yarn tauri build
 ### 🎯 项目特色
 1. **完整的桌面应用** - 使用 Tauri 构建真正的桌面应用
 2. **现代化 UI** - 基于 TailwindCSS 和 DaisyUI 的美观界面
-3. **高效压缩** - 基于 Ghostscript 的专业 PDF 压缩
-4. **用户友好** - 直观的操作流程和状态反馈
-5. **跨平台支持** - 支持 Windows、macOS、Linux
+3. **双引擎架构** - Ghostscript专业压缩 + lopdf备用保障
+4. **智能自适应** - 自动检测和配置最佳压缩引擎
+5. **自包含部署** - 自动下载配置依赖，无需手动安装
+6. **用户友好** - 直观的操作流程和详细状态反馈
+7. **跨平台支持** - 支持 Windows、macOS、Linux
 
 ## 🔮 未来扩展
 
